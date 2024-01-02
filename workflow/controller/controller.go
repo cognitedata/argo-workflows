@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"syscall"
 	"time"
@@ -284,8 +285,12 @@ func (wfc *WorkflowController) Run(ctx context.Context, wfWorkers, workflowTTLWo
 	if err := wfc.initManagers(ctx); err != nil {
 		log.Fatal(err)
 	}
+	
 
-	go wfc.runConfigMapWatcher(ctx.Done())
+	if os.Getenv("WATCH_CONTROLLER_CONFIGMAP") != "false" {
+		go wfc.runConfigMapWatcher(ctx.Done())
+	}
+	
 	go wfc.wfInformer.Run(ctx.Done())
 	go wfc.wftmplInformer.Informer().Run(ctx.Done())
 	go wfc.podInformer.Run(ctx.Done())
